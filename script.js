@@ -27,7 +27,7 @@ const STATUS_URL  = ULTRON_CONFIG.BACKEND_URL + "/api/status";
 const API_KEY     = ULTRON_CONFIG.API_KEY;
 
 // Resume hosted on GitHub Pages — update filename if different
-const RESUME_URL  = "https://drive.google.com/file/d/15jVvsDyducUjdh2PggxBxUObjdWx4huR/view?usp=sharing";
+const RESUME_URL  = "https://yashdalvi664.github.io/ai-with-backend-2.0/resume.pdf";
 
 // Keywords that trigger resume download (checked before sending to backend)
 const RESUME_KEYWORDS = [
@@ -131,27 +131,45 @@ setInterval(checkStatus, 15000);
 
 /* ═══════════════════════════════════════════════════════════
    5. CANVAS SETUP
-   Sizes canvas to fill .core-section
+   Sizes canvas to fill .core-canvas-wrap
+   Uses devicePixelRatio to fix blur on retina/mobile screens
    Called on load and window resize
 ═══════════════════════════════════════════════════════════ */
 let cx, cy, bigRadius;
 
+// Detect mobile — fewer particles + sparser lines for performance
+const isMobile = () => window.innerWidth < 768;
+
 function resizeCanvas() {
   const parent = canvas.parentElement;
-  const oldW   = canvas.width  || parent.clientWidth;
-  const oldH   = canvas.height || parent.clientHeight;
+  const dpr    = window.devicePixelRatio || 1;   // 3 on iPhone, 2 on most Android
 
-  canvas.width  = parent.clientWidth;
-  canvas.height = parent.clientHeight;
+  const cssW = parent.clientWidth;
+  const cssH = parent.clientHeight;
 
-  cx        = canvas.width  / 2;
-  cy        = canvas.height / 2;
+  const oldW = canvas.width  || cssW * dpr;
+  const oldH = canvas.height || cssH * dpr;
+
+  // Set canvas pixel size = CSS size × DPR (fixes blur on retina)
+  canvas.width  = cssW * dpr;
+  canvas.height = cssH * dpr;
+
+  // Scale CSS display size back down so it fits the container
+  canvas.style.width  = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+
+  // Scale context so drawing coordinates stay in CSS pixels
+  ctx.scale(dpr, dpr);
+
+  // Center and radius in CSS pixels
+  cx        = cssW / 2;
+  cy        = cssH / 2;
   bigRadius = Math.min(cx, cy) * 0.75;
 
   if (particles.length > 0) {
-    const scaleX = canvas.width  / oldW;
-    const scaleY = canvas.height / oldH;
-    const scaleR = bigRadius / (Math.min(oldW, oldH) / 2 * 0.75);
+    const scaleX = cssW / (oldW / dpr);
+    const scaleY = cssH / (oldH / dpr);
+    const scaleR = bigRadius / (Math.min(oldW / dpr, oldH / dpr) / 2 * 0.75);
     for (let p of particles) {
       p.x             *= scaleX;
       p.y             *= scaleY;
@@ -166,18 +184,25 @@ function resizeCanvas() {
 
 /* ═══════════════════════════════════════════════════════════
    6. PARTICLE SYSTEM
+   Desktop: 450 particles, step 8 lines
+   Mobile:  200 particles, step 16 lines (much lighter)
 ═══════════════════════════════════════════════════════════ */
-const particleCount = 450;
-const rings         = 6;
-let particles       = [];
-let mouse           = { x: -9999, y: -9999 };
+const rings     = 6;
+let particles   = [];
+let mouse       = { x: -9999, y: -9999 };
+
+// Particle count based on device — mobile gets fewer for performance
+function getParticleCount() { return isMobile() ? 200 : 450; }
+// Line step — higher = fewer lines = faster on mobile
+function getLineStep()      { return isMobile() ? 16  : 8;   }
 
 function lerp(a, b, t) { return a + (b - a) * t; }
 function easeInOut(t)  { return t < 0.5 ? 2*t*t : -1 + (4 - 2*t)*t; }
 
 function initParticles() {
   particles = [];
-  const perRing = Math.floor(particleCount / rings) || 1;
+  const count   = getParticleCount();
+  const perRing = Math.floor(count / rings) || 1;
   for (let r = 1; r <= rings; r++) {
     const radius = (bigRadius * 0.4) * r / rings;
     for (let i = 0; i < perRing; i++) {
@@ -312,12 +337,11 @@ function animate(time) {
   }
 
   // — Neural connection lines —
-  // ALWAYS visible (not just when thinking)
-  // Opacity based on distance — closer particles = stronger line
-  // Step by 8 (instead of 12) for denser mesh like Figma design
+  // Step size adapts to device — mobile uses larger step = fewer lines
+  const step = getLineStep();
   ctx.lineWidth = 0.6;
-  for (let i = 0; i < particles.length; i += 8) {
-    for (let j = i + 1; j < particles.length; j += 8) {
+  for (let i = 0; i < particles.length; i += step) {
+    for (let j = i + 1; j < particles.length; j += step) {
       const dx   = particles[i].x - particles[j].x;
       const dy   = particles[i].y - particles[j].y;
       const dist = Math.sqrt(dx * dx + dy * dy);
