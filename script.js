@@ -142,34 +142,38 @@ const isMobile = () => window.innerWidth < 768;
 
 function resizeCanvas() {
   const parent = canvas.parentElement;
-  const dpr    = window.devicePixelRatio || 1;   // 3 on iPhone, 2 on most Android
+  const dpr    = Math.min(window.devicePixelRatio || 1, 2); // cap at 2x — 3x is overkill
 
   const cssW = parent.clientWidth;
   const cssH = parent.clientHeight;
 
-  const oldW = canvas.width  || cssW * dpr;
-  const oldH = canvas.height || cssH * dpr;
+  // Store old CSS dimensions for particle rescaling
+  const oldCssW = cx ? cx * 2 : cssW;
+  const oldCssH = cy ? cy * 2 : cssH;
 
-  // Set canvas pixel size = CSS size × DPR (fixes blur on retina)
-  canvas.width  = cssW * dpr;
-  canvas.height = cssH * dpr;
+  // Set canvas internal pixel buffer size
+  canvas.width  = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
 
-  // Scale CSS display size back down so it fits the container
+  // Set CSS display size to match container exactly
   canvas.style.width  = cssW + 'px';
   canvas.style.height = cssH + 'px';
 
-  // Scale context so drawing coordinates stay in CSS pixels
+  // Reset transform first (CRITICAL — prevents scale accumulation on resize)
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  // Now scale once for DPR
   ctx.scale(dpr, dpr);
 
-  // Center and radius in CSS pixels
+  // Update center + radius in CSS pixel space
   cx        = cssW / 2;
   cy        = cssH / 2;
   bigRadius = Math.min(cx, cy) * 0.75;
 
   if (particles.length > 0) {
-    const scaleX = cssW / (oldW / dpr);
-    const scaleY = cssH / (oldH / dpr);
-    const scaleR = bigRadius / (Math.min(oldW / dpr, oldH / dpr) / 2 * 0.75);
+    const scaleX = cssW / oldCssW;
+    const scaleY = cssH / oldCssH;
+    const oldRadius = Math.min(oldCssW, oldCssH) / 2 * 0.75;
+    const scaleR = bigRadius / (oldRadius || bigRadius);
     for (let p of particles) {
       p.x             *= scaleX;
       p.y             *= scaleY;
@@ -275,7 +279,8 @@ function stopThinking() {
      so dark mode automatically gets cyan particles
 ═══════════════════════════════════════════════════════════ */
 function animate(time) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Clear in CSS pixel space (cx*2, cy*2) — context is already scaled by DPR
+  ctx.clearRect(0, 0, cx * 2, cy * 2);
 
   // Read current theme colors from CSS variables every frame
   const colors = getParticleColors();
