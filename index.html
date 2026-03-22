@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ultron AI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="agent-container">
+    <canvas id="aiBall"></canvas>
+
+    <div class="chat-container">
+      <div class="chat-header">
+        Ultron
+        <button id="voiceBtn">🎤</button>
+      </div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <input type="text" id="chatInput" placeholder="Type your question..." />
+    </div>
+  </div>
+
+  <!-- config.js MUST load before script.js -->
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
