@@ -10,6 +10,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ULTRON_CONFIG = {
-    BACKEND_URL : "https://YOUR-NGROK-URL.ngrok-free.app",  // ← update this every session
+    BACKEND_URL : "https://shanta-unreared-richie.ngrok-free.dev",  // ← update this every session
     API_KEY     : "ULTRON_TEST_KEY_123"                      // ← must match app.py
   };
