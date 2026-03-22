@@ -27,7 +27,7 @@ const STATUS_URL  = ULTRON_CONFIG.BACKEND_URL + "/api/status";
 const API_KEY     = ULTRON_CONFIG.API_KEY;
 
 // Resume hosted on GitHub Pages — update filename if different
-const RESUME_URL  = "https://yashdalvi664.github.io/ai-with-backend-2.0/resume.pdf";
+const RESUME_URL  = "https://drive.google.com/file/d/15jVvsDyducUjdh2PggxBxUObjdWx4huR/view?usp=sharing";
 
 // Keywords that trigger resume download (checked before sending to backend)
 const RESUME_KEYWORDS = [
