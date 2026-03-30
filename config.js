@@ -9,7 +9,12 @@
 //   4. git add config.js && git commit -m "update ngrok url" && git push
 // ─────────────────────────────────────────────────────────────────────────────
 
+//const ULTRON_CONFIG = {
+    //BACKEND_URL : "https://shanta-unreared-richie.ngrok-free.dev",  // ← update this every session
+   // API_KEY     : "ULTRON_TEST_KEY_123"                      // ← must match app.py
+ // };
+
 const ULTRON_CONFIG = {
-    BACKEND_URL : "https://shanta-unreared-richie.ngrok-free.dev",  // ← update this every session
-    API_KEY     : "ULTRON_TEST_KEY_123"                      // ← must match app.py
-  };
+  BACKEND_URL : "https://ultron-new-backend.onrender.com",
+  API_KEY     : "ULTRON_TEST_KEY_123"
+};
